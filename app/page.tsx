@@ -16,10 +16,14 @@ import { Separator } from "@/components/ui/separator";
 
 function MatrixPreview() {
   const [time, setTime] = useState("00:00");
+  const [colonVisible, setColonVisible] = useState(true);
 
   useEffect(() => {
     const update = () => {
       const now = new Date();
+
+      setColonVisible(now.getSeconds() % 2 === 0);
+
       setTime(
         now.toLocaleTimeString("en-GB", {
           hour: "2-digit",
@@ -34,19 +38,57 @@ function MatrixPreview() {
     return () => clearInterval(id);
   }, []);
 
+  const digitFont: Record<string, string[]> = {
+    "0": ["11111", "10001", "10011", "10101", "11001", "10001", "11111"],
+    "1": ["00100", "01100", "00100", "00100", "00100", "00100", "11111"],
+    "2": ["11111", "00001", "00001", "11111", "10000", "10000", "11111"],
+    "3": ["11111", "00001", "00001", "11111", "00001", "00001", "11111"],
+    "4": ["10001", "10001", "10001", "11111", "00001", "00001", "00001"],
+    "5": ["11111", "10000", "10000", "11111", "00001", "00001", "11111"],
+    "6": ["11111", "10000", "10000", "11111", "10001", "10001", "11111"],
+    "7": ["11111", "00001", "00010", "00100", "01000", "01000", "01000"],
+    "8": ["11111", "10001", "10001", "11111", "10001", "10001", "11111"],
+    "9": ["11111", "10001", "10001", "11111", "00001", "00001", "11111"],
+    ":": ["0", "1", "0", "0", "0", "1", "0"],
+  };
+
   const pixels = useMemo(() => {
-    return Array.from({ length: 16 * 32 }, (_, index) => {
-      const row = Math.floor(index / 32);
-      const col = index % 32;
+    const width = 32;
+    const height = 16;
+    const grid = Array.from({ length: height }, () =>
+      Array.from({ length: width }, () => false)
+    );
+  
+  const drawChar = (char: string, startX: number, startY: number) => {
+    if (char === ":" && !colonVisible) {
+      return;
+    }
 
-      const borderGlow = row === 0 || row === 15 || col === 0 || col === 31;
-      const randomSpark = (row * 7 + col * 11) % 19 === 0;
-      const centerGlow = row >= 5 && row <= 10 && col >= 8 && col <= 23;
+    const pattern = digitFont[char];
 
-      return borderGlow || randomSpark || centerGlow;
+    if (!pattern) {
+      return;
+    }
+
+    pattern.forEach((line, y) => {
+      line.split("").forEach((value, x) => {
+        if (value === "1") {
+          grid[startY + y][startX + x] = true;
+        }
+      });
     });
-  }, []);
-
+  };  
+    let x = 3;
+    const y = 4;
+  
+    time.split("").forEach((char) => {
+      drawChar(char, x, y);
+      x += char === ":" ? 2 : 6;
+    });
+  
+    return grid.flat();
+  }, [time, colonVisible]);
+  
   return (
     <div className="relative overflow-hidden rounded-3xl border border-emerald-400/20 bg-black p-4 shadow-2xl shadow-emerald-500/10">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.25),transparent_55%)]" />
