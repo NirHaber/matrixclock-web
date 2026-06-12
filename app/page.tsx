@@ -1,13 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import {
-  Clock,
-  Code2,
-  Grid3x3,
-  Palette,
-  Wifi,
-} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Clock, Code2, Grid3x3, Palette, ShieldCheck, Wifi } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -34,29 +28,60 @@ function MatrixPreview() {
         })
       );
     };
+
     update();
     const id = setInterval(update, 1000);
     return () => clearInterval(id);
   }, []);
 
+  const pixels = useMemo(() => {
+    return Array.from({ length: 16 * 32 }, (_, index) => {
+      const row = Math.floor(index / 32);
+      const col = index % 32;
+
+      const borderGlow = row === 0 || row === 15 || col === 0 || col === 31;
+      const randomSpark = (row * 7 + col * 11) % 19 === 0;
+      const centerGlow = row >= 5 && row <= 10 && col >= 8 && col <= 23;
+
+      return borderGlow || randomSpark || centerGlow;
+    });
+  }, []);
+
   return (
-    <div
-      className="relative overflow-hidden rounded-xl border border-emerald-500/20 bg-black/60 px-8 py-10 ring-1 ring-emerald-500/10"
-      style={{
-        backgroundImage:
-          "radial-gradient(circle, rgb(52 211 153 / 0.15) 1px, transparent 1px)",
-        backgroundSize: "10px 10px",
-      }}
-    >
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-emerald-500/5 to-transparent" />
-      <p
-        className="relative text-center font-mono text-5xl font-medium tracking-[0.2em] text-emerald-400 sm:text-6xl"
-        style={{ textShadow: "0 0 24px rgb(52 211 153 / 0.45)" }}
-        aria-live="polite"
-        aria-label={`Current time ${time}`}
-      >
-        {time}
-      </p>
+    <div className="relative overflow-hidden rounded-3xl border border-emerald-400/20 bg-black p-4 shadow-2xl shadow-emerald-500/10">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.25),transparent_55%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(16,185,129,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.08)_1px,transparent_1px)] bg-[size:24px_24px]" />
+
+      <div className="relative rounded-2xl border border-emerald-400/20 bg-zinc-950/90 p-5">
+        <div className="mb-5 flex items-center justify-between text-xs text-emerald-300/70">
+          <span className="font-mono">MATRIX DISPLAY</span>
+          <span className="font-mono">LIVE NTP</span>
+        </div>
+
+        <div className="grid grid-cols-32 gap-1">
+          {pixels.map((active, index) => (
+            <span
+              key={index}
+              className={
+                active
+                  ? "size-1.5 rounded-full bg-emerald-300 shadow-[0_0_10px_rgba(52,211,153,0.8)]"
+                  : "size-1.5 rounded-full bg-emerald-950/70"
+              }
+            />
+          ))}
+        </div>
+
+        <div className="mt-8 rounded-xl border border-emerald-400/20 bg-black/80 px-6 py-6 text-center">
+          <p
+            className="font-mono text-5xl font-semibold tracking-[0.25em] text-emerald-300 sm:text-6xl"
+            style={{ textShadow: "0 0 28px rgb(52 211 153 / 0.65)" }}
+            aria-live="polite"
+            aria-label={`Current time ${time}`}
+          >
+            {time}
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
@@ -83,20 +108,21 @@ const features = [
 ];
 
 const highlights = [
-  { label: "Display", value: "64 × 32 matrix" },
+  { label: "Display", value: "32 × 16 LED matrix" },
+  { label: "Controller", value: "ESP32-C3" },
   { label: "Sync", value: "Wi-Fi NTP" },
   { label: "Firmware", value: "Open source" },
-  { label: "Mount", value: "Wall or desk" },
 ];
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-sm">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
-          <span className="font-mono text-sm font-semibold tracking-wide">
+    <div className="min-h-screen bg-black text-zinc-50">
+      <header className="sticky top-0 z-50 border-b border-emerald-400/10 bg-black/70 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+          <span className="font-mono text-sm font-semibold tracking-[0.3em] text-emerald-300">
             MatrixClock
           </span>
+
           <nav className="flex items-center gap-1 sm:gap-2">
             <Button variant="ghost" size="sm" asChild>
               <a href="#features">Features</a>
@@ -108,52 +134,98 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="flex-1">
-        <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
-          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-            <div className="flex flex-col gap-6">
-              <Badge variant="outline" className="w-fit border-emerald-500/30 text-emerald-400">
+      <main>
+        <section className="relative overflow-hidden">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(16,185,129,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.08)_1px,transparent_1px)] bg-[size:48px_48px]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.28),transparent_40%),radial-gradient(circle_at_bottom_left,rgba(20,184,166,0.18),transparent_35%)]" />
+          <div className="absolute inset-0 bg-black/70" />
+
+          <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 py-20 sm:px-6 sm:py-28 lg:grid-cols-2 lg:gap-16">
+            <div className="flex flex-col gap-7">
+              <Badge
+                variant="outline"
+                className="w-fit border-emerald-400/30 bg-emerald-400/10 text-emerald-300"
+              >
                 LED Matrix Clock
               </Badge>
-              <h1 className="font-heading text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">
-                Time, rendered in light.
-              </h1>
-              <p className="max-w-lg text-lg text-muted-foreground">
-                MatrixClock turns every minute into a crisp dot-matrix display —
-                precise, readable, and built for desks, shelves, and walls.
-              </p>
+
+              <div className="space-y-5">
+                <h1 className="max-w-2xl text-5xl font-semibold leading-tight tracking-tight sm:text-6xl">
+                  Time, rendered in{" "}
+                  <span className="text-emerald-300">light.</span>
+                </h1>
+
+                <p className="max-w-xl text-lg leading-8 text-zinc-300">
+                  MatrixClock turns every minute into a crisp dot-matrix display —
+                  precise, readable, open, and built for desks, shelves, and walls.
+                </p>
+              </div>
+
               <div className="flex flex-wrap gap-3">
                 <Button size="lg" asChild>
                   <a href="#cta">Pre-order</a>
                 </Button>
-                <Button variant="outline" size="lg" asChild>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="border-emerald-400/30 bg-black/20 text-zinc-50 hover:bg-emerald-400/10"
+                  asChild
+                >
                   <a href="#features">See features</a>
                 </Button>
               </div>
+
+              <div className="grid max-w-xl grid-cols-3 gap-3 pt-4">
+                <div className="rounded-xl border border-emerald-400/10 bg-white/5 p-3">
+                  <p className="font-mono text-sm text-emerald-300">32×16</p>
+                  <p className="text-xs text-zinc-400">LED matrix</p>
+                </div>
+                <div className="rounded-xl border border-emerald-400/10 bg-white/5 p-3">
+                  <p className="font-mono text-sm text-emerald-300">NTP</p>
+                  <p className="text-xs text-zinc-400">Wi-Fi sync</p>
+                </div>
+                <div className="rounded-xl border border-emerald-400/10 bg-white/5 p-3">
+                  <p className="font-mono text-sm text-emerald-300">Open</p>
+                  <p className="text-xs text-zinc-400">Firmware</p>
+                </div>
+              </div>
             </div>
+
             <MatrixPreview />
           </div>
         </section>
 
-        <Separator />
+        <Separator className="bg-emerald-400/10" />
 
         <section id="features" className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
           <div className="mb-10 flex flex-col gap-2">
-            <h2 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">
+            <Badge
+              variant="outline"
+              className="w-fit border-emerald-400/30 bg-emerald-400/10 text-emerald-300"
+            >
               Built for clarity
+            </Badge>
+            <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+              Simple hardware. Thoughtful software.
             </h2>
-            <p className="max-w-2xl text-muted-foreground">
-              Simple hardware, thoughtful software, and a display that stays
-              legible day and night.
+            <p className="max-w-2xl text-zinc-400">
+              A display that stays legible day and night, with a software stack
+              designed for customization.
             </p>
           </div>
+
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((feature) => (
-              <Card key={feature.title}>
+              <Card
+                key={feature.title}
+                className="border-emerald-400/10 bg-zinc-950 text-zinc-50"
+              >
                 <CardHeader>
-                  <feature.icon className="size-5 text-emerald-400" aria-hidden />
+                  <feature.icon className="size-5 text-emerald-300" aria-hidden />
                   <CardTitle>{feature.title}</CardTitle>
-                  <CardDescription>{feature.description}</CardDescription>
+                  <CardDescription className="text-zinc-400">
+                    {feature.description}
+                  </CardDescription>
                 </CardHeader>
               </Card>
             ))}
@@ -163,43 +235,55 @@ export default function Home() {
         <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6 sm:pb-20">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {highlights.map((item) => (
-              <Card key={item.label} size="sm">
+              <Card
+                key={item.label}
+                className="border-emerald-400/10 bg-zinc-950 text-zinc-50"
+              >
                 <CardHeader>
-                  <CardDescription>{item.label}</CardDescription>
-                  <CardTitle className="font-mono text-base">{item.value}</CardTitle>
+                  <CardDescription className="text-zinc-500">
+                    {item.label}
+                  </CardDescription>
+                  <CardTitle className="font-mono text-base text-emerald-300">
+                    {item.value}
+                  </CardTitle>
                 </CardHeader>
               </Card>
             ))}
           </div>
         </section>
 
-        <Separator />
-
         <section id="cta" className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-xl sm:text-2xl">
-                Ready to light up your space?
-              </CardTitle>
-              <CardDescription className="text-base">
-                Join the waitlist for the first production run of MatrixClock.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button size="lg" asChild>
-                <a href="#">Pre-order now</a>
-              </Button>
-            </CardContent>
+          <Card className="overflow-hidden border-emerald-400/20 bg-zinc-950 text-zinc-50">
+            <div className="bg-[linear-gradient(to_right,rgba(16,185,129,0.18)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.18)_1px,transparent_1px)] bg-[size:32px_32px]">
+              <CardHeader className="bg-black/70">
+                <div className="mb-2 flex items-center gap-2 text-emerald-300">
+                  <ShieldCheck className="size-5" />
+                  <span className="font-mono text-sm">FIRST RUN</span>
+                </div>
+                <CardTitle className="text-2xl sm:text-3xl">
+                  Ready to light up your space?
+                </CardTitle>
+                <CardDescription className="max-w-xl text-base text-zinc-400">
+                  Join the waitlist for the first production run of MatrixClock.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="bg-black/70">
+                <Button size="lg" asChild>
+                  <a href="#">Pre-order now</a>
+                </Button>
+              </CardContent>
+            </div>
           </Card>
         </section>
       </main>
 
-      <footer className="mt-auto border-t border-border/60">
+      <footer className="mt-auto border-t border-emerald-400/10">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-8 sm:flex-row sm:px-6">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2 text-sm text-zinc-400">
             <Clock className="size-4" aria-hidden />
             <span>© 2026 MatrixClock</span>
           </div>
+
           <div className="flex items-center gap-1">
             <Button variant="ghost" size="sm" asChild>
               <a href="#">
