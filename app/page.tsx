@@ -114,6 +114,64 @@ const highlights = [
   { label: "Firmware", value: "Open source" },
 ];
 
+const layouts = [
+  {
+    name: "MAIN",
+    description: "Large primary clock with clear HH:MM display.",
+  },
+  {
+    name: "CLASSIC",
+    description: "Classic digital clock layout with strong readability.",
+  },
+  {
+    name: "STACKED",
+    description: "Compact stacked time layout for small spaces.",
+  },
+  {
+    name: "DIGIT_SWAP",
+    description: "Animated digit swap mode with colorful transitions.",
+  },
+  {
+    name: "SLIDE_DEMO",
+    description: "Slide animation demo layout for smooth motion.",
+  },
+];
+
+function LayoutPreview({ name }: { name: string }) {
+  return (
+    <div className="rounded-xl border border-emerald-400/10 bg-black p-4">
+      <div className="mb-3 flex items-center justify-between font-mono text-[10px] text-emerald-300/70">
+        <span>{name}</span>
+        <span>32×16</span>
+      </div>
+
+      <div className="grid grid-cols-16 gap-1">
+        {Array.from({ length: 16 * 8 }, (_, index) => {
+          const row = Math.floor(index / 16);
+          const col = index % 16;
+          const active =
+            row === 0 ||
+            row === 7 ||
+            col === 0 ||
+            col === 15 ||
+            (row >= 3 && row <= 4 && col >= 4 && col <= 11);
+
+          return (
+            <span
+              key={index}
+              className={
+                active
+                  ? "size-1.5 rounded-full bg-emerald-300 shadow-[0_0_8px_rgba(52,211,153,0.8)]"
+                  : "size-1.5 rounded-full bg-emerald-950/70"
+              }
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   return (
     <div className="min-h-screen bg-black text-zinc-50">
@@ -231,7 +289,42 @@ export default function Home() {
             ))}
           </div>
         </section>
+        <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6 sm:pb-20">
+          <div className="mb-10 flex flex-col gap-2">
+            <Badge
+              variant="outline"
+              className="w-fit border-emerald-400/30 bg-emerald-400/10 text-emerald-300"
+            >
+              Layout showcase
+            </Badge>
+            <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+              Five display modes. One MatrixClock.
+            </h2>
+            <p className="max-w-2xl text-zinc-400">
+              Preview the built-in layouts designed for readability, animation, and customization.
+            </p>
+          </div>
 
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            {layouts.map((layout) => (
+              <Card
+                key={layout.name}
+                className="border-emerald-400/10 bg-zinc-950 text-zinc-50"
+              >
+                <CardHeader>
+                  <LayoutPreview name={layout.name} />
+                  <CardTitle className="font-mono text-base text-emerald-300">
+                    {layout.name}
+                  </CardTitle>
+                  <CardDescription className="text-zinc-400">
+                    {layout.description}
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            ))}
+          </div>
+        </section>
+        
         <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6 sm:pb-20">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {highlights.map((item) => (
