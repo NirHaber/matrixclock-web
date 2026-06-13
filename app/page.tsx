@@ -158,6 +158,80 @@ const drawClassicLayoutToGrid = (drawChar: DrawCharFn) => {
   });
 };
 
+const drawStackedLayoutToGrid = (drawChar: DrawCharFn) => {
+  const now = new Date();
+
+  const hours = now.getHours().toString().padStart(2, "0");
+  const minutes = now.getMinutes().toString().padStart(2, "0");
+  const seconds = now.getSeconds().toString().padStart(2, "0");
+
+  const timeY = 3;
+  const secondsY = 5;
+
+  let hoursX = 1;
+  hours.split("").forEach((char) => {
+    drawChar(LARGE_FONT, char, hoursX, timeY, "stacked");
+    hoursX += 6;
+  });
+
+  drawChar(LARGE_FONT, ":", 12, timeY, "stacked");
+
+  let minutesX = 13;
+  minutes.split("").forEach((char) => {
+    drawChar(LARGE_FONT, char, minutesX, timeY, "stacked");
+    minutesX += 6;
+  });
+
+  let secondsX = 25;
+  seconds.split("").forEach((char) => {
+    drawChar(SMALL_FONT, char, secondsX, secondsY, "stacked");
+    secondsX += 4;
+  });
+};
+
+const drawSlideDemoLayoutToGrid = (drawChar: DrawCharFn) => {
+  const now = new Date();
+
+  const hours = now.getHours().toString().padStart(2, "0");
+  const minutes = now.getMinutes().toString().padStart(2, "0");
+  const seconds = now.getSeconds().toString().padStart(2, "0");
+
+  const timeText = `${hours}:${minutes}`;
+
+  const timeY = 1;
+  const secondsY = 10;
+
+  let timeX = 3;
+  timeText.split("").forEach((char) => {
+    drawChar(LARGE_FONT, char, timeX, timeY, "slideDemo");
+    timeX += char === ":" ? 2 : 6;
+  });
+
+  let secondsX = 11;
+  seconds.split("").forEach((char) => {
+    drawChar(MEDIUM_FONT, char, secondsX, secondsY, "slideDemoSeconds");
+    secondsX += 5;
+  });
+};
+
+const drawDigitSwapLayoutToGrid = (
+  drawChar: DrawCharFn,
+  time: string,
+  temperature: string,
+  humidity: string
+) => {
+  const now = new Date();
+  const secondsNumber = now.getSeconds();
+
+  const showMainLayout = secondsNumber >= 55 || secondsNumber <= 4;
+
+  if (showMainLayout) {
+    drawMainLayoutToGrid(drawChar, time, temperature, humidity);
+  } else {
+    drawClassicLayoutToGrid(drawChar);
+  }
+};
+
 function MatrixPreview({
   layout,
   time,
@@ -211,88 +285,19 @@ function MatrixPreview({
       });
     };
 
-    const drawMainLayout = () => {
-      drawMainLayoutToGrid(drawChar, time, temperature, humidity);
-    };
-
-    const drawClassicLayout = () => {
-      drawClassicLayoutToGrid(drawChar);
-    };
-
     if (layout === "DIGIT_SWAP") {
-      const now = new Date();
-      const secondsNumber = now.getSeconds();
-
-      const showMainLayout = secondsNumber >= 55 || secondsNumber <= 4;
-
-      if (showMainLayout) {
-        drawMainLayout();
-      } else {
-        drawClassicLayout();
-      }
+      drawDigitSwapLayoutToGrid(drawChar, time, temperature, humidity);
     }
     else if (layout === "CLASSIC") {
-      drawClassicLayout();
+      drawClassicLayoutToGrid(drawChar);
     }
     else if (layout === "SLIDE_DEMO") {
-      const now = new Date();
-
-      const hours = now.getHours().toString().padStart(2, "0");
-      const minutes = now.getMinutes().toString().padStart(2, "0");
-      const seconds = now.getSeconds().toString().padStart(2, "0");
-
-      const timeText = `${hours}:${minutes}`;
-
-      const timeY = 1;
-      const secondsY = 10;
-
-      let timeX = 3;
-      timeText.split("").forEach((char) => {
-        drawChar(LARGE_FONT, char, timeX, timeY, "slideDemo");
-        timeX += char === ":" ? 2 : 6;
-      });
-
-      let secondsX = 11;
-      seconds.split("").forEach((char) => {
-        drawChar(MEDIUM_FONT, char, secondsX, secondsY, "slideDemoSeconds");
-        secondsX += 5;
-      });
+      drawSlideDemoLayoutToGrid(drawChar);
     }
     else if (layout === "STACKED") {
-      const now = new Date();
-
-      const hours = now.getHours().toString().padStart(2, "0");
-      const minutes = now.getMinutes().toString().padStart(2, "0");
-      const seconds = now.getSeconds().toString().padStart(2, "0");
-
-      const hoursMinutes = `${hours}:${minutes}`;
-
-      const timeY = 3;
-      const secondsY = 5;
-
-      const [displayHours, displayMinutes] = hoursMinutes.split(":");
-
-      let hoursX = 1;
-      displayHours.split("").forEach((char) => {
-        drawChar(LARGE_FONT, char, hoursX, timeY, "stacked");
-        hoursX += 6;
-      });
-
-      drawChar(LARGE_FONT, ":", 12, timeY, "stacked");
-
-      let minutesX = 13;
-      displayMinutes.split("").forEach((char) => {
-        drawChar(LARGE_FONT, char, minutesX, timeY, "stacked");
-        minutesX += 6;
-      });
-
-      let secondsX = 25;
-      seconds.split("").forEach((char) => {
-        drawChar(SMALL_FONT, char, secondsX, secondsY, "stacked");
-        secondsX += 4;
-      });
+      drawStackedLayoutToGrid(drawChar);
     } else {
-      drawMainLayout();
+      drawMainLayoutToGrid(drawChar, time, temperature, humidity);
     }
 
     return grid.flat();
@@ -401,22 +406,6 @@ function LayoutPreview({
   const width = 32;
   const height = 16;
 
-  const font: Record<string, string[]> = {
-    "0": ["111", "101", "101", "101", "111"],
-    "1": ["010", "110", "010", "010", "111"],
-    "2": ["111", "001", "111", "100", "111"],
-    "3": ["111", "001", "111", "001", "111"],
-    "4": ["101", "101", "111", "001", "001"],
-    "5": ["111", "100", "111", "001", "111"],
-    "6": ["111", "100", "111", "101", "111"],
-    "7": ["111", "001", "001", "001", "001"],
-    "8": ["111", "101", "111", "101", "111"],
-    "9": ["111", "101", "111", "001", "111"],
-    ":": ["0", "1", "0", "1", "0"],
-    "/": ["001", "001", "010", "100", "100"],
-    "|": ["1", "1", "1", "1", "1"],
-  };
-
   const grid = Array.from({ length: height }, () =>
     Array.from({ length: width }, () => ({
       active: false,
@@ -458,61 +447,24 @@ function LayoutPreview({
     });
   };
 
-  const drawText = (text: string, startX: number, startY: number) => {
-    let x = startX;
-
-    text.split("").forEach((char) => {
-      const pattern = font[char];
-
-      if (!pattern) {
-        x += 2;
-        return;
-      }
-
-      pattern.forEach((line, y) => {
-        line.split("").forEach((value, px) => {
-          const targetX = x + px;
-          const targetY = startY + y;
-
-          if (
-            value === "1" &&
-            targetX >= 0 &&
-            targetX < width &&
-            targetY >= 0 &&
-            targetY < height
-          ) {
-            grid[targetY][targetX] = {
-              active: true,
-              color: "time",
-            };
-          }
-        });
-      });
-
-      x += char === ":" || char === "|" ? 2 : 4;
-    });
-  };
-
   if (name === "MAIN") {
     drawMainLayoutToGrid(drawPreviewChar, time, temperature, humidity);
   }
-
+  
   if (name === "CLASSIC") {
     drawClassicLayoutToGrid(drawPreviewChar);
   }
-
+  
   if (name === "STACKED") {
-    drawText("19", 4, 0);
-    drawText("45", 4, 3);
+    drawStackedLayoutToGrid(drawPreviewChar);
   }
-
+  
   if (name === "DIGIT_SWAP") {
-    drawText("19:4|", 0, 1);
+    drawDigitSwapLayoutToGrid(drawPreviewChar, time, temperature, humidity);
   }
-
+  
   if (name === "SLIDE_DEMO") {
-    drawText("19:44", -1, 0);
-    drawText("19:45", 1, 3);
+    drawSlideDemoLayoutToGrid(drawPreviewChar);
   }
 
   const pixels = grid.flat();
