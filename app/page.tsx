@@ -40,6 +40,7 @@ const SMALL_FONT: Record<string, string[]> = {
   "8": ["111", "101", "111", "101", "111"],
   "9": ["111", "101", "111", "001", "111"],
   ".": ["0", "0", "0", "0", "1"],
+  "/": ["001", "001", "010", "100", "100"],
   "°": ["11", "11", "00", "00", "00"],
   "%": ["101", "001", "010", "100", "101"],
 };
@@ -61,12 +62,16 @@ function MatrixPreview({
     stacked:
       "bg-purple-300 shadow-[0_0_10px_rgba(216,180,254,0.9)]",
 
+    classicDate:
+      "bg-orange-200 shadow-[0_0_10px_rgba(254,215,170,0.85)]",
+
     temperature:
       "bg-sky-300 shadow-[0_0_10px_rgba(125,211,252,0.8)]",
 
     humidity:
       "bg-amber-300 shadow-[0_0_10px_rgba(252,211,77,0.8)]",
   };
+
   useEffect(() => {
     const update = () => {
       const now = new Date();
@@ -142,7 +147,33 @@ function MatrixPreview({
       });
     };
 
-    if (layout === "STACKED") {
+    if (layout === "CLASSIC") {
+      const now = new Date();
+
+      const hours = now.getHours().toString().padStart(2, "0");
+      const minutes = now.getMinutes().toString().padStart(2, "0");
+
+      const day = now.getDate().toString().padStart(2, "0");
+      const month = (now.getMonth() + 1).toString().padStart(2, "0");
+
+      const timeText = `${hours}:${minutes}`;
+      const dateText = `${day}/${month}`;
+
+      const timeY = 1;
+      const dateY = 10;
+
+      let timeX = 3;
+      timeText.split("").forEach((char) => {
+        drawChar(LARGE_FONT, char, timeX, timeY, "stacked");
+        timeX += char === ":" ? 2 : 6;
+      });
+
+      let dateX = 7;
+      dateText.split("").forEach((char) => {
+        drawChar(SMALL_FONT, char, dateX, dateY, "classicDate");
+        dateX += 4;
+      });
+    } else if (layout === "STACKED") {
       const now = new Date();
 
       const hours = now.getHours().toString().padStart(2, "0");
