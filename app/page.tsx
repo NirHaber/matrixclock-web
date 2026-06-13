@@ -597,7 +597,12 @@ export default function Home() {
               </div>
 
               <div className="flex flex-wrap gap-3">
-                <Button size="lg" asChild>
+
+                <Button
+                  size="lg"
+                  className="transition-all duration-300 hover:scale-105 hover:shadow-[0_0_25px_rgba(0,255,180,0.4)]"
+                  asChild
+                >
                   <a href="#cta">Pre-order</a>
                 </Button>
                 <Button
@@ -790,7 +795,16 @@ export default function Home() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="bg-black/70">
-                <Button size="lg" asChild>
+                <Button
+                  size="lg"
+                  className="
+                    transition-all
+                    duration-300
+                    hover:scale-105
+                    hover:shadow-[0_0_25px_rgba(0,255,180,0.4)]
+                  "
+                  asChild
+                >
                   <a href="#">Pre-order now</a>
                 </Button>
               </CardContent>
