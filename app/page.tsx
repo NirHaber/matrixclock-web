@@ -630,7 +630,7 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="flex flex-col gap-2">
+            <div className="mx-auto flex w-full max-w-[430px] flex-col gap-2 overflow-hidden sm:max-w-none">
               <div className="flex items-center justify-between rounded-2xl border border-emerald-400/10 bg-zinc-950/70 px-4 py-3">
                 <Button
                   type="button"
@@ -660,15 +660,13 @@ export default function Home() {
                 </Button>
               </div>
 
-              <div className="origin-top scale-[0.86] sm:scale-100">
-                <MatrixPreview
-                  layout={selectedLayout}
-                  time={time}
-                  colonVisible={colonVisible}
-                  temperature={temperature}
-                  humidity={humidity}
-                />
-              </div>
+              <MatrixPreview
+                layout={selectedLayout}
+                time={time}
+                colonVisible={colonVisible}
+                temperature={temperature}
+                humidity={humidity}
+              />
             </div>
           </div>
         </section>
