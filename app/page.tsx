@@ -166,8 +166,105 @@ function MatrixPreview({
       });
     };
 
-    if (layout === "CLASSIC") {
+    if (layout === "DIGIT_SWAP") {
       const now = new Date();
+    
+      const secondsNumber = now.getSeconds();
+    
+      const hours = now.getHours().toString().padStart(2, "0");
+      const minutes = now.getMinutes().toString().padStart(2, "0");
+    
+      const day = now.getDate().toString().padStart(2, "0");
+      const month = (now.getMonth() + 1)
+        .toString()
+        .padStart(2, "0");
+    
+      const showMainLayout =
+        secondsNumber >= 55 || secondsNumber <= 4;
+    
+      if (showMainLayout) {
+        let timeX = 3;
+        const timeY = 1;
+    
+        const timeText = `${hours}:${minutes}`;
+    
+        timeText.split("").forEach((char) => {
+          drawChar(LARGE_FONT, char, timeX, timeY, "time");
+          timeX += char === ":" ? 2 : 6;
+        });
+    
+        let tempX = 0;
+        const envY = 10;
+        const tempText = `${temperature}°`;
+    
+        tempText.split("").forEach((char) => {
+          drawChar(
+            SMALL_FONT,
+            char,
+            tempX,
+            envY,
+            "temperature"
+          );
+    
+          tempX +=
+            char === "."
+              ? 2
+              : char === "°"
+              ? 3
+              : 4;
+        });
+    
+        let humidityX = 20;
+        const humidityText = `${humidity}%`;
+    
+        humidityText.split("").forEach((char) => {
+          drawChar(
+            SMALL_FONT,
+            char,
+            humidityX,
+            envY,
+            "humidity"
+          );
+    
+          humidityX += 4;
+        });
+      } else {
+        const timeText = `${hours}:${minutes}`;
+        const dateText = `${day}/${month}`;
+    
+        const timeY = 1;
+        const dateY = 10;
+    
+        let timeX = 3;
+    
+        timeText.split("").forEach((char) => {
+          drawChar(
+            LARGE_FONT,
+            char,
+            timeX,
+            timeY,
+            "stacked"
+          );
+    
+          timeX += char === ":" ? 2 : 6;
+        });
+    
+        let dateX = 7;
+    
+        dateText.split("").forEach((char) => {
+          drawChar(
+            SMALL_FONT,
+            char,
+            dateX,
+            dateY,
+            "classicDate"
+          );
+    
+          dateX += 4;
+        });
+      }
+    }
+    else if (layout === "CLASSIC") {      const now = new Date();
 
       const hours = now.getHours().toString().padStart(2, "0");
       const minutes = now.getMinutes().toString().padStart(2, "0");
