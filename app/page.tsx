@@ -58,6 +58,29 @@ const SMALL_FONT: Record<string, string[]> = {
   "%": ["101", "001", "010", "100", "101"],
 };
 
+const pixelColors = {
+  time:
+    "bg-emerald-300 shadow-[0_0_10px_rgba(52,211,153,0.8)]",
+
+  stacked:
+    "bg-purple-300 shadow-[0_0_10px_rgba(216,180,254,0.9)]",
+
+  classicDate:
+    "bg-orange-200 shadow-[0_0_10px_rgba(254,215,170,0.85)]",
+
+  slideDemo:
+    "bg-cyan-300 shadow-[0_0_10px_rgba(103,232,249,0.9)]",
+
+  slideDemoSeconds:
+    "bg-cyan-200 shadow-[0_0_10px_rgba(165,243,252,0.85)]",
+
+  temperature:
+    "bg-sky-300 shadow-[0_0_10px_rgba(125,211,252,0.8)]",
+
+  humidity:
+    "bg-amber-300 shadow-[0_0_10px_rgba(252,211,77,0.8)]",
+};
+
 type PixelColorKey =
   | "time"
   | "stacked"
@@ -116,29 +139,6 @@ function MatrixPreview({
   const [colonVisible, setColonVisible] = useState(true);
   const [temperature, setTemperature] = useState("23.4");
   const [humidity, setHumidity] = useState("58");
-
-  const pixelColors = {
-    time:
-      "bg-emerald-300 shadow-[0_0_10px_rgba(52,211,153,0.8)]",
-
-    stacked:
-      "bg-purple-300 shadow-[0_0_10px_rgba(216,180,254,0.9)]",
-
-    classicDate:
-      "bg-orange-200 shadow-[0_0_10px_rgba(254,215,170,0.85)]",
-
-    slideDemo:
-      "bg-cyan-300 shadow-[0_0_10px_rgba(103,232,249,0.9)]",
-
-    slideDemoSeconds:
-      "bg-cyan-200 shadow-[0_0_10px_rgba(165,243,252,0.85)]",
-
-    temperature:
-      "bg-sky-300 shadow-[0_0_10px_rgba(125,211,252,0.8)]",
-
-    humidity:
-      "bg-amber-300 shadow-[0_0_10px_rgba(252,211,77,0.8)]",
-  };
 
   useEffect(() => {
     const update = () => {
@@ -417,8 +417,8 @@ const layouts = [
 ];
 
 function LayoutPreview({ name }: { name: string }) {
-  const width = 16;
-  const height = 8;
+  const width = 32;
+  const height = 16;
 
   const font: Record<string, string[]> = {
     "0": ["111", "101", "101", "101", "111"],
@@ -437,7 +437,10 @@ function LayoutPreview({ name }: { name: string }) {
   };
 
   const grid = Array.from({ length: height }, () =>
-    Array.from({ length: width }, () => false)
+    Array.from({ length: width }, () => ({
+      active: false,
+      color: "time" as PixelColorKey,
+    }))
   );
 
   const drawText = (text: string, startX: number, startY: number) => {
@@ -473,7 +476,46 @@ function LayoutPreview({ name }: { name: string }) {
   };
 
   if (name === "MAIN") {
-    drawText("19:45", 0, 1);
+    const drawPreviewChar: DrawCharFn = (
+      sourceFont,
+      char,
+      startX,
+      startY,
+      color
+    ) => {
+      const pattern = sourceFont[char];
+
+      if (!pattern) {
+        return;
+      }
+
+      pattern.forEach((line, y) => {
+        line.split("").forEach((value, x) => {
+          const targetX = startX + x;
+          const targetY = startY + y;
+
+          if (
+            value === "1" &&
+            targetX >= 0 &&
+            targetX < width &&
+            targetY >= 0 &&
+            targetY < height
+          ) {
+            grid[targetY][targetX] = {
+              active: true,
+              color,
+            };
+          }
+        });
+      });
+    };
+
+    drawMainLayoutToGrid(
+      drawPreviewChar,
+      "19:45",
+      "23.4",
+      "58"
+    );
   }
 
   if (name === "CLASSIC") {
@@ -504,14 +546,14 @@ function LayoutPreview({ name }: { name: string }) {
         <span>PREVIEW</span>
       </div>
 
-      <div className="grid grid-cols-16 gap-1">
-        {pixels.map((active, index) => (
+      <div className="grid grid-cols-32 gap-0.5">
+        {pixels.map((pixel, index) => (
           <span
             key={index}
             className={
-              active
-                ? "size-1.5 rounded-full bg-emerald-300 shadow-[0_0_8px_rgba(52,211,153,0.8)]"
-                : "size-1.5 rounded-full bg-emerald-950/70"
+              pixel.active
+                ? `size-1 rounded-full ${pixelColors[pixel.color]}`
+                : "size-1 rounded-full bg-emerald-950/70"
             }
           />
         ))}
