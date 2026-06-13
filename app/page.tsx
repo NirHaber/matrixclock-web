@@ -44,7 +44,11 @@ const SMALL_FONT: Record<string, string[]> = {
   "%": ["101", "001", "010", "100", "101"],
 };
 
-function MatrixPreview() {
+function MatrixPreview({
+  layout,
+}: {
+  layout: string;
+}) {
   const [time, setTime] = useState("00:00");
   const [colonVisible, setColonVisible] = useState(true);
   const [temperature, setTemperature] = useState("23.4");
@@ -53,12 +57,16 @@ function MatrixPreview() {
   const pixelColors = {
     time:
       "bg-emerald-300 shadow-[0_0_10px_rgba(52,211,153,0.8)]",
+
+    stacked:
+      "bg-purple-300 shadow-[0_0_10px_rgba(216,180,254,0.9)]",
+
     temperature:
       "bg-sky-300 shadow-[0_0_10px_rgba(125,211,252,0.8)]",
+
     humidity:
       "bg-amber-300 shadow-[0_0_10px_rgba(252,211,77,0.8)]",
   };
-
   useEffect(() => {
     const update = () => {
       const now = new Date();
@@ -134,34 +142,67 @@ function MatrixPreview() {
       });
     };
 
-    let timeX = 3;
-    const timeY = 1;
+    if (layout === "STACKED") {
+      const now = new Date();
 
-    time.split("").forEach((char) => {
-      drawChar(LARGE_FONT, char, timeX, timeY, "time");
-      timeX += char === ":" ? 2 : 6;
-    });
+      const hours = now.getHours().toString().padStart(2, "0");
+      const minutes = now.getMinutes().toString().padStart(2, "0");
+      const seconds = now.getSeconds().toString().padStart(2, "0");
 
-    let tempX = 0;
-    const envY = 10;
-    const tempText = `${temperature}°`;
+      const hoursMinutes = `${hours}:${minutes}`;
 
-    tempText.split("").forEach((char) => {
-      drawChar(SMALL_FONT, char, tempX, envY, "temperature");
-      tempX += char === "." ? 2 : char === "°" ? 3 : 4;
-    });
+      const timeY = 3;
+      const secondsY = 5;
 
-    let humidityX = 20;
-    const humidityText = `${humidity}%`;
+      const [displayHours, displayMinutes] = hoursMinutes.split(":");
 
-    humidityText.split("").forEach((char) => {
-      drawChar(SMALL_FONT, char, humidityX, envY, "humidity");
-      humidityX += 4;
-    });
+      let hoursX = 1;
+      displayHours.split("").forEach((char) => {
+        drawChar(LARGE_FONT, char, hoursX, timeY, "stacked");
+        hoursX += 6;
+      });
 
+      drawChar(LARGE_FONT, ":", 12, timeY, "stacked");
+
+      let minutesX = 13;
+      displayMinutes.split("").forEach((char) => {
+        drawChar(LARGE_FONT, char, minutesX, timeY, "stacked");
+        minutesX += 6;
+      });
+
+      let secondsX = 25;
+      seconds.split("").forEach((char) => {
+        drawChar(SMALL_FONT, char, secondsX, secondsY, "stacked");
+        secondsX += 4;
+      });
+    } else {
+      let timeX = 3;
+      const timeY = 1;
+
+      time.split("").forEach((char) => {
+        drawChar(LARGE_FONT, char, timeX, timeY, "time");
+        timeX += char === ":" ? 2 : 6;
+      });
+
+      let tempX = 0;
+      const envY = 10;
+      const tempText = `${temperature}°`;
+
+      tempText.split("").forEach((char) => {
+        drawChar(SMALL_FONT, char, tempX, envY, "temperature");
+        tempX += char === "." ? 2 : char === "°" ? 3 : 4;
+      });
+
+      let humidityX = 20;
+      const humidityText = `${humidity}%`;
+
+      humidityText.split("").forEach((char) => {
+        drawChar(SMALL_FONT, char, humidityX, envY, "humidity");
+        humidityX += 4;
+      });
+    }
     return grid.flat();
-  }, [time, colonVisible, temperature, humidity]);
-
+  }, [time, colonVisible, temperature, humidity, layout]);
   return (
     <div className="relative overflow-hidden rounded-3xl border border-emerald-400/20 bg-black p-4 shadow-2xl shadow-emerald-500/10">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.25),transparent_55%)]" />
@@ -481,7 +522,7 @@ export default function Home() {
                 </Button>
               </div>
 
-              <MatrixPreview />
+              <MatrixPreview layout={selectedLayout} />
             </div>          </div>
         </section>
 
