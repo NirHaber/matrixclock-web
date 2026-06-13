@@ -65,6 +65,12 @@ const pixelColors = {
   stacked:
     "bg-purple-300 shadow-[0_0_10px_rgba(216,180,254,0.9)]",
 
+  analogMarker:
+    "bg-purple-400 shadow-[0_0_4px_rgba(216,180,254,0.10)]",
+  
+  analogHand:
+    "bg-purple-300 shadow-[0_0_12px_rgba(216,180,254,0.95)]",
+
   classicDate:
     "bg-orange-200 shadow-[0_0_10px_rgba(254,215,170,0.85)]",
 
@@ -84,6 +90,8 @@ const pixelColors = {
 type PixelColorKey =
   | "time"
   | "stacked"
+  | "analogMarker"
+  | "analogHand"
   | "classicDate"
   | "slideDemo"
   | "slideDemoSeconds"
@@ -97,6 +105,47 @@ type DrawCharFn = (
   startY: number,
   color: PixelColorKey
 ) => void;
+
+type SetPixelFn = (
+  x: number,
+  y: number,
+  color: PixelColorKey
+) => void;
+
+const drawAnalogSecondsToGrid = (
+  setPixel: SetPixelFn,
+  centerX: number,
+  centerY: number,
+  seconds: number
+) => {
+  const frame = [
+    [-1, -2], [0, -2], [1, -2],
+    [2, -1], [2, 0], [2, 1],
+    [1, 2], [0, 2], [-1, 2],
+    [-2, 1], [-2, 0], [-2, -1],
+  ];
+
+  const handPositions = [
+    [0, -1],
+    [1, -1],
+    [1, 0],
+    [1, 1],
+    [0, 1],
+    [-1, 1],
+    [-1, 0],
+    [-1, -1],
+  ];
+
+  const step = Math.floor((seconds * 8) / 60);
+  const [dx, dy] = handPositions[step];
+
+  frame.forEach(([x, y]) => {
+    setPixel(centerX + x, centerY + y, "analogMarker");
+  });
+  
+  setPixel(centerX, centerY, "analogHand");
+  setPixel(centerX + dx, centerY + dy, "analogHand");
+};
 
 const drawMainLayoutToGrid = (
   drawChar: DrawCharFn,
@@ -158,15 +207,16 @@ const drawClassicLayoutToGrid = (drawChar: DrawCharFn) => {
   });
 };
 
-const drawStackedLayoutToGrid = (drawChar: DrawCharFn) => {
+const drawStackedLayoutToGrid = (
+  drawChar: DrawCharFn,
+  setPixel: SetPixelFn
+) => {
   const now = new Date();
 
   const hours = now.getHours().toString().padStart(2, "0");
   const minutes = now.getMinutes().toString().padStart(2, "0");
-  const seconds = now.getSeconds().toString().padStart(2, "0");
 
   const timeY = 3;
-  const secondsY = 5;
 
   let hoursX = 1;
   hours.split("").forEach((char) => {
@@ -182,11 +232,8 @@ const drawStackedLayoutToGrid = (drawChar: DrawCharFn) => {
     minutesX += 6;
   });
 
-  let secondsX = 25;
-  seconds.split("").forEach((char) => {
-    drawChar(SMALL_FONT, char, secondsX, secondsY, "stacked");
-    secondsX += 4;
-  });
+  drawAnalogSecondsToGrid(setPixel, 28, 7, now.getSeconds());
+
 };
 
 const drawSlideDemoLayoutToGrid = (drawChar: DrawCharFn) => {
@@ -285,6 +332,12 @@ function MatrixPreview({
       });
     };
 
+    const setPixel: SetPixelFn = (x, y, color) => {
+      if (x >= 0 && x < width && y >= 0 && y < height) {
+        grid[y][x] = { active: true, color };
+      }
+    };
+
     if (layout === "DIGIT_SWAP") {
       drawDigitSwapLayoutToGrid(drawChar, time, temperature, humidity);
     }
@@ -295,7 +348,7 @@ function MatrixPreview({
       drawSlideDemoLayoutToGrid(drawChar);
     }
     else if (layout === "STACKED") {
-      drawStackedLayoutToGrid(drawChar);
+      drawStackedLayoutToGrid(drawChar, setPixel);
     } else {
       drawMainLayoutToGrid(drawChar, time, temperature, humidity);
     }
@@ -447,6 +500,15 @@ function LayoutPreview({
     });
   };
 
+  const setPreviewPixel: SetPixelFn = (x, y, color) => {
+    if (x >= 0 && x < width && y >= 0 && y < height) {
+      grid[y][x] = {
+        active: true,
+        color,
+      };
+    }
+  };
+
   if (name === "MAIN") {
     drawMainLayoutToGrid(drawPreviewChar, time, temperature, humidity);
   }
@@ -456,7 +518,7 @@ function LayoutPreview({
   }
 
   if (name === "STACKED") {
-    drawStackedLayoutToGrid(drawPreviewChar);
+    drawStackedLayoutToGrid(drawPreviewChar, setPreviewPixel);
   }
 
   if (name === "DIGIT_SWAP") {
