@@ -450,19 +450,19 @@ function LayoutPreview({
   if (name === "MAIN") {
     drawMainLayoutToGrid(drawPreviewChar, time, temperature, humidity);
   }
-  
+
   if (name === "CLASSIC") {
     drawClassicLayoutToGrid(drawPreviewChar);
   }
-  
+
   if (name === "STACKED") {
     drawStackedLayoutToGrid(drawPreviewChar);
   }
-  
+
   if (name === "DIGIT_SWAP") {
     drawDigitSwapLayoutToGrid(drawPreviewChar, time, temperature, humidity);
   }
-  
+
   if (name === "SLIDE_DEMO") {
     drawSlideDemoLayoutToGrid(drawPreviewChar);
   }
@@ -723,8 +723,18 @@ export default function Home() {
             {layouts.map((layout) => (
               <Card
                 key={layout.name}
-                className="border-emerald-400/10 bg-zinc-950 text-zinc-50"
-              >
+                className="
+                border-emerald-400/10
+                bg-zinc-950
+                text-zinc-50
+                transition-all
+                duration-300
+                hover:scale-105
+                hover:-translate-y-1
+                hover:border-emerald-400/30
+                hover:shadow-lg
+                hover:shadow-emerald-500/20
+              "              >
                 <CardHeader>
                   <LayoutPreview
                     name={layout.name}
