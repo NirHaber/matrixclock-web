@@ -58,6 +58,55 @@ const SMALL_FONT: Record<string, string[]> = {
   "%": ["101", "001", "010", "100", "101"],
 };
 
+type PixelColorKey =
+  | "time"
+  | "stacked"
+  | "classicDate"
+  | "slideDemo"
+  | "slideDemoSeconds"
+  | "temperature"
+  | "humidity";
+
+type DrawCharFn = (
+  font: Record<string, string[]>,
+  char: string,
+  startX: number,
+  startY: number,
+  color: PixelColorKey
+) => void;
+
+const drawMainLayoutToGrid = (
+  drawChar: DrawCharFn,
+  time: string,
+  temperature: string,
+  humidity: string
+) => {
+  let timeX = 3;
+  const timeY = 1;
+
+  time.split("").forEach((char) => {
+    drawChar(LARGE_FONT, char, timeX, timeY, "time");
+    timeX += char === ":" ? 2 : 6;
+  });
+
+  let tempX = 0;
+  const envY = 10;
+  const tempText = `${temperature}°`;
+
+  tempText.split("").forEach((char) => {
+    drawChar(SMALL_FONT, char, tempX, envY, "temperature");
+    tempX += char === "." ? 2 : char === "°" ? 3 : 4;
+  });
+
+  let humidityX = 20;
+  const humidityText = `${humidity}%`;
+
+  humidityText.split("").forEach((char) => {
+    drawChar(SMALL_FONT, char, humidityX, envY, "humidity");
+    humidityX += 4;
+  });
+};
+
 function MatrixPreview({
   layout,
 }: {
@@ -167,32 +216,8 @@ function MatrixPreview({
     };
 
     const drawMainLayout = () => {
-      let timeX = 3;
-      const timeY = 1;
-
-      time.split("").forEach((char) => {
-        drawChar(LARGE_FONT, char, timeX, timeY, "time");
-        timeX += char === ":" ? 2 : 6;
-      });
-
-      let tempX = 0;
-      const envY = 10;
-      const tempText = `${temperature}°`;
-
-      tempText.split("").forEach((char) => {
-        drawChar(SMALL_FONT, char, tempX, envY, "temperature");
-        tempX += char === "." ? 2 : char === "°" ? 3 : 4;
-      });
-
-      let humidityX = 20;
-      const humidityText = `${humidity}%`;
-
-      humidityText.split("").forEach((char) => {
-        drawChar(SMALL_FONT, char, humidityX, envY, "humidity");
-        humidityX += 4;
-      });
+      drawMainLayoutToGrid(drawChar, time, temperature, humidity);
     };
-
     const drawClassicLayout = () => {
       const now = new Date();
 
