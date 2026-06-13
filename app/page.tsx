@@ -28,6 +28,19 @@ const LARGE_FONT: Record<string, string[]> = {
   ":": ["0", "1", "0", "0", "0", "1", "0"],
 };
 
+const MEDIUM_FONT: Record<string, string[]> = {
+  "0": ["1111", "1001", "1001", "1001", "1111"],
+  "1": ["0010", "0110", "0010", "0010", "0111"],
+  "2": ["1111", "0001", "1111", "1000", "1111"],
+  "3": ["1111", "0001", "1111", "0001", "1111"],
+  "4": ["1001", "1001", "1111", "0001", "0001"],
+  "5": ["1111", "1000", "1111", "0001", "1111"],
+  "6": ["1111", "1000", "1111", "1001", "1111"],
+  "7": ["1111", "0001", "0010", "0100", "0100"],
+  "8": ["1111", "1001", "1111", "1001", "1111"],
+  "9": ["1111", "1001", "1111", "0001", "1111"],
+};
+
 const SMALL_FONT: Record<string, string[]> = {
   "0": ["111", "101", "101", "101", "111"],
   "1": ["010", "110", "010", "010", "111"],
@@ -64,6 +77,12 @@ function MatrixPreview({
 
     classicDate:
       "bg-orange-200 shadow-[0_0_10px_rgba(254,215,170,0.85)]",
+
+    slideDemo:
+      "bg-cyan-300 shadow-[0_0_10px_rgba(103,232,249,0.9)]",
+
+    slideDemoSeconds:
+      "bg-cyan-200 shadow-[0_0_10px_rgba(165,243,252,0.85)]",
 
     temperature:
       "bg-sky-300 shadow-[0_0_10px_rgba(125,211,252,0.8)]",
@@ -173,7 +192,34 @@ function MatrixPreview({
         drawChar(SMALL_FONT, char, dateX, dateY, "classicDate");
         dateX += 4;
       });
-    } else if (layout === "STACKED") {
+
+
+    }
+    else if (layout === "SLIDE_DEMO") {
+      const now = new Date();
+
+      const hours = now.getHours().toString().padStart(2, "0");
+      const minutes = now.getMinutes().toString().padStart(2, "0");
+      const seconds = now.getSeconds().toString().padStart(2, "0");
+
+      const timeText = `${hours}:${minutes}`;
+
+      const timeY = 1;
+      const secondsY = 10;
+
+      let timeX = 3;
+      timeText.split("").forEach((char) => {
+        drawChar(LARGE_FONT, char, timeX, timeY, "slideDemo");
+        timeX += char === ":" ? 2 : 6;
+      });
+
+      let secondsX = 11;
+      seconds.split("").forEach((char) => {
+        drawChar(MEDIUM_FONT, char, secondsX, secondsY, "slideDemoSeconds");
+        secondsX += 5;
+      });
+    }
+    else if (layout === "STACKED") {
       const now = new Date();
 
       const hours = now.getHours().toString().padStart(2, "0");
