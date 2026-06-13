@@ -574,8 +574,7 @@ export default function Home() {
           <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(16,185,129,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.08)_1px,transparent_1px)] bg-[size:48px_48px]" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.28),transparent_40%),radial-gradient(circle_at_bottom_left,rgba(20,184,166,0.18),transparent_35%)]" />
           <div className="absolute inset-0 bg-black/70" />
-
-          <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 py-20 sm:px-6 sm:py-28 lg:grid-cols-2 lg:gap-16">
+          <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 py-14 sm:px-6 sm:py-28 lg:grid-cols-2 lg:gap-16">
             <div className="flex flex-col gap-7">
               <Badge
                 variant="outline"
