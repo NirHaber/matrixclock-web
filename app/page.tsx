@@ -14,6 +14,36 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
+const LARGE_FONT: Record<string, string[]> = {
+  "0": ["11111", "10001", "10011", "10101", "11001", "10001", "11111"],
+  "1": ["00100", "01100", "00100", "00100", "00100", "00100", "11111"],
+  "2": ["11111", "00001", "00001", "11111", "10000", "10000", "11111"],
+  "3": ["11111", "00001", "00001", "11111", "00001", "00001", "11111"],
+  "4": ["10001", "10001", "10001", "11111", "00001", "00001", "00001"],
+  "5": ["11111", "10000", "10000", "11111", "00001", "00001", "11111"],
+  "6": ["11111", "10000", "10000", "11111", "10001", "10001", "11111"],
+  "7": ["11111", "00001", "00010", "00100", "01000", "01000", "01000"],
+  "8": ["11111", "10001", "10001", "11111", "10001", "10001", "11111"],
+  "9": ["11111", "10001", "10001", "11111", "00001", "00001", "11111"],
+  ":": ["0", "1", "0", "0", "0", "1", "0"],
+};
+
+const SMALL_FONT: Record<string, string[]> = {
+  "0": ["111", "101", "101", "101", "111"],
+  "1": ["010", "110", "010", "010", "111"],
+  "2": ["111", "001", "111", "100", "111"],
+  "3": ["111", "001", "111", "001", "111"],
+  "4": ["101", "101", "111", "001", "001"],
+  "5": ["111", "100", "111", "001", "111"],
+  "6": ["111", "100", "111", "101", "111"],
+  "7": ["111", "001", "001", "001", "001"],
+  "8": ["111", "101", "111", "101", "111"],
+  "9": ["111", "101", "111", "001", "111"],
+  ".": ["0", "0", "0", "0", "1"],
+  "°": ["11", "11", "00", "00", "00"],
+  "%": ["101", "001", "010", "100", "101"],
+};
+
 function MatrixPreview() {
   const [time, setTime] = useState("00:00");
   const [colonVisible, setColonVisible] = useState(true);
@@ -64,36 +94,6 @@ function MatrixPreview() {
     };
   }, []);
 
-  const largeFont: Record<string, string[]> = {
-    "0": ["11111", "10001", "10011", "10101", "11001", "10001", "11111"],
-    "1": ["00100", "01100", "00100", "00100", "00100", "00100", "11111"],
-    "2": ["11111", "00001", "00001", "11111", "10000", "10000", "11111"],
-    "3": ["11111", "00001", "00001", "11111", "00001", "00001", "11111"],
-    "4": ["10001", "10001", "10001", "11111", "00001", "00001", "00001"],
-    "5": ["11111", "10000", "10000", "11111", "00001", "00001", "11111"],
-    "6": ["11111", "10000", "10000", "11111", "10001", "10001", "11111"],
-    "7": ["11111", "00001", "00010", "00100", "01000", "01000", "01000"],
-    "8": ["11111", "10001", "10001", "11111", "10001", "10001", "11111"],
-    "9": ["11111", "10001", "10001", "11111", "00001", "00001", "11111"],
-    ":": ["0", "1", "0", "0", "0", "1", "0"],
-  };
-
-  const smallFont: Record<string, string[]> = {
-    "0": ["111", "101", "101", "101", "111"],
-    "1": ["010", "110", "010", "010", "111"],
-    "2": ["111", "001", "111", "100", "111"],
-    "3": ["111", "001", "111", "001", "111"],
-    "4": ["101", "101", "111", "001", "001"],
-    "5": ["111", "100", "111", "001", "111"],
-    "6": ["111", "100", "111", "101", "111"],
-    "7": ["111", "001", "001", "001", "001"],
-    "8": ["111", "101", "111", "101", "111"],
-    "9": ["111", "101", "111", "001", "111"],
-    ".": ["0", "0", "0", "0", "1"],
-    "°": ["11", "11", "00", "00", "00"],
-    "%": ["101", "001", "010", "100", "101"],
-  };
-
   const pixels = useMemo(() => {
     const width = 32;
     const height = 16;
@@ -138,7 +138,7 @@ function MatrixPreview() {
     const timeY = 1;
 
     time.split("").forEach((char) => {
-      drawChar(largeFont, char, timeX, timeY, "time");
+      drawChar(LARGE_FONT, char, timeX, timeY, "time");
       timeX += char === ":" ? 2 : 6;
     });
 
@@ -147,7 +147,7 @@ function MatrixPreview() {
     const tempText = `${temperature}°`;
 
     tempText.split("").forEach((char) => {
-      drawChar(smallFont, char, tempX, envY, "temperature");
+      drawChar(SMALL_FONT, char, tempX, envY, "temperature");
       tempX += char === "." ? 2 : char === "°" ? 3 : 4;
     });
 
@@ -155,7 +155,7 @@ function MatrixPreview() {
     const humidityText = `${humidity}%`;
 
     humidityText.split("").forEach((char) => {
-      drawChar(smallFont, char, humidityX, envY, "humidity");
+      drawChar(SMALL_FONT, char, humidityX, envY, "humidity");
       humidityX += 4;
     });
 
@@ -356,6 +356,25 @@ function LayoutPreview({ name }: { name: string }) {
 }
 
 export default function Home() {
+  const layoutNames = layouts.map((layout) => layout.name);
+  const [selectedLayout, setSelectedLayout] = useState(layoutNames[0]);
+
+  const selectedLayoutIndex = layoutNames.indexOf(selectedLayout);
+
+  const goToPreviousLayout = () => {
+    const previousIndex =
+      selectedLayoutIndex === 0 ? layoutNames.length - 1 : selectedLayoutIndex - 1;
+
+    setSelectedLayout(layoutNames[previousIndex]);
+  };
+
+  const goToNextLayout = () => {
+    const nextIndex =
+      selectedLayoutIndex === layoutNames.length - 1 ? 0 : selectedLayoutIndex + 1;
+
+    setSelectedLayout(layoutNames[nextIndex]);
+  };
+
   return (
     <div className="min-h-screen bg-black text-zinc-50">
       <header className="sticky top-0 z-50 border-b border-emerald-400/10 bg-black/70 backdrop-blur-xl">
@@ -432,8 +451,38 @@ export default function Home() {
               </div>
             </div>
 
-            <MatrixPreview />
-          </div>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between rounded-2xl border border-emerald-400/10 bg-zinc-950/70 px-4 py-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="border-emerald-400/30 bg-black/20 text-zinc-50 hover:bg-emerald-400/10"
+                  onClick={goToPreviousLayout}
+                >
+                  ←
+                </Button>
+
+                <div className="text-center">
+                  <p className="font-mono text-xs text-zinc-500">ACTIVE LAYOUT</p>
+                  <p className="font-mono text-sm font-semibold tracking-[0.2em] text-emerald-300">
+                    {selectedLayout}
+                  </p>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="border-emerald-400/30 bg-black/20 text-zinc-50 hover:bg-emerald-400/10"
+                  onClick={goToNextLayout}
+                >
+                  →
+                </Button>
+              </div>
+
+              <MatrixPreview />
+            </div>          </div>
         </section>
 
         <Separator className="bg-emerald-400/10" />
@@ -507,7 +556,7 @@ export default function Home() {
             ))}
           </div>
         </section>
-        
+
         <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6 sm:pb-20">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {highlights.map((item) => (
