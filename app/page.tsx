@@ -17,6 +17,17 @@ import { Separator } from "@/components/ui/separator";
 function MatrixPreview() {
   const [time, setTime] = useState("00:00");
   const [colonVisible, setColonVisible] = useState(true);
+  const [temperature, setTemperature] = useState("23.4");
+  const [humidity, setHumidity] = useState("58");
+
+  const pixelColors = {
+    time:
+      "bg-emerald-300 shadow-[0_0_10px_rgba(52,211,153,0.8)]",
+    temperature:
+      "bg-sky-300 shadow-[0_0_10px_rgba(125,211,252,0.8)]",
+    humidity:
+      "bg-amber-300 shadow-[0_0_10px_rgba(252,211,77,0.8)]",
+  };
 
   useEffect(() => {
     const update = () => {
@@ -33,12 +44,27 @@ function MatrixPreview() {
       );
     };
 
+    const updateEnvironment = () => {
+      const nextTemperature = (20 + Math.random() * 10).toFixed(1);
+      const nextHumidity = Math.round(40 + Math.random() * 30).toString();
+
+      setTemperature(nextTemperature);
+      setHumidity(nextHumidity);
+    };
+
     update();
-    const id = setInterval(update, 1000);
-    return () => clearInterval(id);
+    updateEnvironment();
+
+    const clockId = setInterval(update, 1000);
+    const environmentId = setInterval(updateEnvironment, 10000);
+
+    return () => {
+      clearInterval(clockId);
+      clearInterval(environmentId);
+    };
   }, []);
 
-  const digitFont: Record<string, string[]> = {
+  const largeFont: Record<string, string[]> = {
     "0": ["11111", "10001", "10011", "10101", "11001", "10001", "11111"],
     "1": ["00100", "01100", "00100", "00100", "00100", "00100", "11111"],
     "2": ["11111", "00001", "00001", "11111", "10000", "10000", "11111"],
@@ -52,43 +78,90 @@ function MatrixPreview() {
     ":": ["0", "1", "0", "0", "0", "1", "0"],
   };
 
+  const smallFont: Record<string, string[]> = {
+    "0": ["111", "101", "101", "101", "111"],
+    "1": ["010", "110", "010", "010", "111"],
+    "2": ["111", "001", "111", "100", "111"],
+    "3": ["111", "001", "111", "001", "111"],
+    "4": ["101", "101", "111", "001", "001"],
+    "5": ["111", "100", "111", "001", "111"],
+    "6": ["111", "100", "111", "101", "111"],
+    "7": ["111", "001", "001", "001", "001"],
+    "8": ["111", "101", "111", "101", "111"],
+    "9": ["111", "101", "111", "001", "111"],
+    ".": ["0", "0", "0", "0", "1"],
+    "°": ["11", "11", "00", "00", "00"],
+    "%": ["101", "001", "010", "100", "101"],
+  };
+
   const pixels = useMemo(() => {
     const width = 32;
     const height = 16;
+
     const grid = Array.from({ length: height }, () =>
-      Array.from({ length: width }, () => false)
+      Array.from({ length: width }, () => ({
+        active: false,
+        color: "time" as keyof typeof pixelColors,
+      }))
     );
-  
-  const drawChar = (char: string, startX: number, startY: number) => {
-    if (char === ":" && !colonVisible) {
-      return;
-    }
 
-    const pattern = digitFont[char];
+    const drawChar = (
+      font: Record<string, string[]>,
+      char: string,
+      startX: number,
+      startY: number,
+      color: keyof typeof pixelColors
+    ) => {
+      if (char === ":" && !colonVisible) {
+        return;
+      }
 
-    if (!pattern) {
-      return;
-    }
+      const pattern = font[char];
 
-    pattern.forEach((line, y) => {
-      line.split("").forEach((value, x) => {
-        if (value === "1") {
-          grid[startY + y][startX + x] = true;
-        }
+      if (!pattern) {
+        return;
+      }
+
+      pattern.forEach((line, y) => {
+        line.split("").forEach((value, x) => {
+          const px = startX + x;
+          const py = startY + y;
+
+          if (value === "1" && px >= 0 && px < width && py >= 0 && py < height) {
+            grid[py][px] = { active: true, color };
+          }
+        });
       });
-    });
-  };  
-    let x = 3;
-    const y = 4;
-  
+    };
+
+    let timeX = 3;
+    const timeY = 1;
+
     time.split("").forEach((char) => {
-      drawChar(char, x, y);
-      x += char === ":" ? 2 : 6;
+      drawChar(largeFont, char, timeX, timeY, "time");
+      timeX += char === ":" ? 2 : 6;
     });
-  
+
+    let tempX = 0;
+    const envY = 10;
+    const tempText = `${temperature}°`;
+
+    tempText.split("").forEach((char) => {
+      drawChar(smallFont, char, tempX, envY, "temperature");
+      tempX += char === "." ? 2 : char === "°" ? 3 : 4;
+    });
+
+    let humidityX = 20;
+    const humidityText = `${humidity}%`;
+
+    humidityText.split("").forEach((char) => {
+      drawChar(smallFont, char, humidityX, envY, "humidity");
+      humidityX += 4;
+    });
+
     return grid.flat();
-  }, [time, colonVisible]);
-  
+  }, [time, colonVisible, temperature, humidity]);
+
   return (
     <div className="relative overflow-hidden rounded-3xl border border-emerald-400/20 bg-black p-4 shadow-2xl shadow-emerald-500/10">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.25),transparent_55%)]" />
@@ -101,12 +174,12 @@ function MatrixPreview() {
         </div>
 
         <div className="grid grid-cols-32 gap-1">
-          {pixels.map((active, index) => (
+          {pixels.map((pixel, index) => (
             <span
               key={index}
               className={
-                active
-                  ? "size-1.5 rounded-full bg-emerald-300 shadow-[0_0_10px_rgba(52,211,153,0.8)]"
+                pixel.active
+                  ? `size-1.5 rounded-full ${pixelColors[pixel.color]}`
                   : "size-1.5 rounded-full bg-emerald-950/70"
               }
             />
@@ -127,7 +200,6 @@ function MatrixPreview() {
     </div>
   );
 }
-
 const features = [
   {
     icon: Grid3x3,
@@ -180,35 +252,104 @@ const layouts = [
 ];
 
 function LayoutPreview({ name }: { name: string }) {
+  const width = 16;
+  const height = 8;
+
+  const font: Record<string, string[]> = {
+    "0": ["111", "101", "101", "101", "111"],
+    "1": ["010", "110", "010", "010", "111"],
+    "2": ["111", "001", "111", "100", "111"],
+    "3": ["111", "001", "111", "001", "111"],
+    "4": ["101", "101", "111", "001", "001"],
+    "5": ["111", "100", "111", "001", "111"],
+    "6": ["111", "100", "111", "101", "111"],
+    "7": ["111", "001", "001", "001", "001"],
+    "8": ["111", "101", "111", "101", "111"],
+    "9": ["111", "101", "111", "001", "111"],
+    ":": ["0", "1", "0", "1", "0"],
+    "/": ["001", "001", "010", "100", "100"],
+    "|": ["1", "1", "1", "1", "1"],
+  };
+
+  const grid = Array.from({ length: height }, () =>
+    Array.from({ length: width }, () => false)
+  );
+
+  const drawText = (text: string, startX: number, startY: number) => {
+    let x = startX;
+
+    text.split("").forEach((char) => {
+      const pattern = font[char];
+
+      if (!pattern) {
+        x += 2;
+        return;
+      }
+
+      pattern.forEach((line, y) => {
+        line.split("").forEach((value, px) => {
+          const targetX = x + px;
+          const targetY = startY + y;
+
+          if (
+            value === "1" &&
+            targetX >= 0 &&
+            targetX < width &&
+            targetY >= 0 &&
+            targetY < height
+          ) {
+            grid[targetY][targetX] = true;
+          }
+        });
+      });
+
+      x += char === ":" || char === "|" ? 2 : 4;
+    });
+  };
+
+  if (name === "MAIN") {
+    drawText("19:45", 0, 1);
+  }
+
+  if (name === "CLASSIC") {
+    drawText("19:45", 0, 0);
+    drawText("12/06", 0, 3);
+  }
+
+  if (name === "STACKED") {
+    drawText("19", 4, 0);
+    drawText("45", 4, 3);
+  }
+
+  if (name === "DIGIT_SWAP") {
+    drawText("19:4|", 0, 1);
+  }
+
+  if (name === "SLIDE_DEMO") {
+    drawText("19:44", -1, 0);
+    drawText("19:45", 1, 3);
+  }
+
+  const pixels = grid.flat();
+
   return (
     <div className="rounded-xl border border-emerald-400/10 bg-black p-4">
       <div className="mb-3 flex items-center justify-between font-mono text-[10px] text-emerald-300/70">
         <span>{name}</span>
-        <span>32×16</span>
+        <span>PREVIEW</span>
       </div>
 
       <div className="grid grid-cols-16 gap-1">
-        {Array.from({ length: 16 * 8 }, (_, index) => {
-          const row = Math.floor(index / 16);
-          const col = index % 16;
-          const active =
-            row === 0 ||
-            row === 7 ||
-            col === 0 ||
-            col === 15 ||
-            (row >= 3 && row <= 4 && col >= 4 && col <= 11);
-
-          return (
-            <span
-              key={index}
-              className={
-                active
-                  ? "size-1.5 rounded-full bg-emerald-300 shadow-[0_0_8px_rgba(52,211,153,0.8)]"
-                  : "size-1.5 rounded-full bg-emerald-950/70"
-              }
-            />
-          );
-        })}
+        {pixels.map((active, index) => (
+          <span
+            key={index}
+            className={
+              active
+                ? "size-1.5 rounded-full bg-emerald-300 shadow-[0_0_8px_rgba(52,211,153,0.8)]"
+                : "size-1.5 rounded-full bg-emerald-950/70"
+            }
+          />
+        ))}
       </div>
     </div>
   );
