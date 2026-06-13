@@ -132,49 +132,17 @@ const drawMainLayoutToGrid = (
 
 function MatrixPreview({
   layout,
+  time,
+  colonVisible,
+  temperature,
+  humidity,
 }: {
   layout: string;
+  time: string;
+  colonVisible: boolean;
+  temperature: string;
+  humidity: string;
 }) {
-  const [time, setTime] = useState("00:00");
-  const [colonVisible, setColonVisible] = useState(true);
-  const [temperature, setTemperature] = useState("23.4");
-  const [humidity, setHumidity] = useState("58");
-
-  useEffect(() => {
-    const update = () => {
-      const now = new Date();
-
-      setColonVisible(now.getSeconds() % 2 === 0);
-
-      setTime(
-        now.toLocaleTimeString("en-GB", {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: false,
-        })
-      );
-    };
-
-    const updateEnvironment = () => {
-      const nextTemperature = (20 + Math.random() * 10).toFixed(1);
-      const nextHumidity = Math.round(40 + Math.random() * 30).toString();
-
-      setTemperature(nextTemperature);
-      setHumidity(nextHumidity);
-    };
-
-    update();
-    updateEnvironment();
-
-    const clockId = setInterval(update, 1000);
-    const environmentId = setInterval(updateEnvironment, 10000);
-
-    return () => {
-      clearInterval(clockId);
-      clearInterval(environmentId);
-    };
-  }, []);
-
   const pixels = useMemo(() => {
     const width = 32;
     const height = 16;
@@ -416,7 +384,17 @@ const layouts = [
   },
 ];
 
-function LayoutPreview({ name }: { name: string }) {
+function LayoutPreview({
+  name,
+  time,
+  temperature,
+  humidity,
+}: {
+  name: string;
+  time: string;
+  temperature: string;
+  humidity: string;
+}) {
   const width = 32;
   const height = 16;
 
@@ -466,7 +444,10 @@ function LayoutPreview({ name }: { name: string }) {
             targetY >= 0 &&
             targetY < height
           ) {
-            grid[targetY][targetX] = true;
+            grid[targetY][targetX] = {
+              active: true,
+              color: "time",
+            };
           }
         });
       });
@@ -512,9 +493,9 @@ function LayoutPreview({ name }: { name: string }) {
 
     drawMainLayoutToGrid(
       drawPreviewChar,
-      "19:45",
-      "23.4",
-      "58"
+      time,
+      temperature,
+      humidity
     );
   }
 
@@ -565,6 +546,45 @@ function LayoutPreview({ name }: { name: string }) {
 export default function Home() {
   const layoutNames = layouts.map((layout) => layout.name);
   const [selectedLayout, setSelectedLayout] = useState(layoutNames[0]);
+  const [time, setTime] = useState("00:00");
+  const [colonVisible, setColonVisible] = useState(true);
+  const [temperature, setTemperature] = useState("23.4");
+  const [humidity, setHumidity] = useState("58");
+
+  useEffect(() => {
+    const update = () => {
+      const now = new Date();
+
+      setColonVisible(now.getSeconds() % 2 === 0);
+
+      setTime(
+        now.toLocaleTimeString("en-GB", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        })
+      );
+    };
+
+    const updateEnvironment = () => {
+      const nextTemperature = (20 + Math.random() * 10).toFixed(1);
+      const nextHumidity = Math.round(40 + Math.random() * 30).toString();
+
+      setTemperature(nextTemperature);
+      setHumidity(nextHumidity);
+    };
+
+    update();
+    updateEnvironment();
+
+    const clockId = setInterval(update, 1000);
+    const environmentId = setInterval(updateEnvironment, 10000);
+
+    return () => {
+      clearInterval(clockId);
+      clearInterval(environmentId);
+    };
+  }, []);
 
   const selectedLayoutIndex = layoutNames.indexOf(selectedLayout);
 
@@ -688,8 +708,15 @@ export default function Home() {
                 </Button>
               </div>
 
-              <MatrixPreview layout={selectedLayout} />
-            </div>          </div>
+              <MatrixPreview
+                layout={selectedLayout}
+                time={time}
+                colonVisible={colonVisible}
+                temperature={temperature}
+                humidity={humidity}
+              />
+            </div>
+          </div>
         </section>
 
         <Separator className="bg-emerald-400/10" />
@@ -751,7 +778,12 @@ export default function Home() {
                 className="border-emerald-400/10 bg-zinc-950 text-zinc-50"
               >
                 <CardHeader>
-                  <LayoutPreview name={layout.name} />
+                  <LayoutPreview
+                    name={layout.name}
+                    time={time}
+                    temperature={temperature}
+                    humidity={humidity}
+                  />
                   <CardTitle className="font-mono text-base text-emerald-300">
                     {layout.name}
                   </CardTitle>
