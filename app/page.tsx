@@ -660,13 +660,15 @@ export default function Home() {
                 </Button>
               </div>
 
-              <MatrixPreview
-                layout={selectedLayout}
-                time={time}
-                colonVisible={colonVisible}
-                temperature={temperature}
-                humidity={humidity}
-              />
+              <div className="origin-top scale-[0.86] sm:scale-100">
+                <MatrixPreview
+                  layout={selectedLayout}
+                  time={time}
+                  colonVisible={colonVisible}
+                  temperature={temperature}
+                  humidity={humidity}
+                />
+              </div>
             </div>
           </div>
         </section>
