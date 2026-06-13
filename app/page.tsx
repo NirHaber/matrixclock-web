@@ -130,6 +130,34 @@ const drawMainLayoutToGrid = (
   });
 };
 
+const drawClassicLayoutToGrid = (drawChar: DrawCharFn) => {
+  const now = new Date();
+
+  const hours = now.getHours().toString().padStart(2, "0");
+  const minutes = now.getMinutes().toString().padStart(2, "0");
+
+  const day = now.getDate().toString().padStart(2, "0");
+  const month = (now.getMonth() + 1).toString().padStart(2, "0");
+
+  const timeText = `${hours}:${minutes}`;
+  const dateText = `${day}/${month}`;
+
+  const timeY = 1;
+  const dateY = 10;
+
+  let timeX = 3;
+  timeText.split("").forEach((char) => {
+    drawChar(LARGE_FONT, char, timeX, timeY, "stacked");
+    timeX += char === ":" ? 2 : 6;
+  });
+
+  let dateX = 7;
+  dateText.split("").forEach((char) => {
+    drawChar(SMALL_FONT, char, dateX, dateY, "classicDate");
+    dateX += 4;
+  });
+};
+
 function MatrixPreview({
   layout,
   time,
@@ -186,34 +214,9 @@ function MatrixPreview({
     const drawMainLayout = () => {
       drawMainLayoutToGrid(drawChar, time, temperature, humidity);
     };
+
     const drawClassicLayout = () => {
-      const now = new Date();
-
-      const hours = now.getHours().toString().padStart(2, "0");
-      const minutes = now.getMinutes().toString().padStart(2, "0");
-
-      const day = now.getDate().toString().padStart(2, "0");
-      const month = (now.getMonth() + 1).toString().padStart(2, "0");
-
-      const timeText = `${hours}:${minutes}`;
-      const dateText = `${day}/${month}`;
-
-      const timeY = 1;
-      const dateY = 10;
-
-      let timeX = 3;
-
-      timeText.split("").forEach((char) => {
-        drawChar(LARGE_FONT, char, timeX, timeY, "stacked");
-        timeX += char === ":" ? 2 : 6;
-      });
-
-      let dateX = 7;
-
-      dateText.split("").forEach((char) => {
-        drawChar(SMALL_FONT, char, dateX, dateY, "classicDate");
-        dateX += 4;
-      });
+      drawClassicLayoutToGrid(drawChar);
     };
 
     if (layout === "DIGIT_SWAP") {
@@ -421,6 +424,40 @@ function LayoutPreview({
     }))
   );
 
+  const drawPreviewChar: DrawCharFn = (
+    sourceFont,
+    char,
+    startX,
+    startY,
+    color
+  ) => {
+    const pattern = sourceFont[char];
+
+    if (!pattern) {
+      return;
+    }
+
+    pattern.forEach((line, y) => {
+      line.split("").forEach((value, x) => {
+        const targetX = startX + x;
+        const targetY = startY + y;
+
+        if (
+          value === "1" &&
+          targetX >= 0 &&
+          targetX < width &&
+          targetY >= 0 &&
+          targetY < height
+        ) {
+          grid[targetY][targetX] = {
+            active: true,
+            color,
+          };
+        }
+      });
+    });
+  };
+
   const drawText = (text: string, startX: number, startY: number) => {
     let x = startX;
 
@@ -457,51 +494,11 @@ function LayoutPreview({
   };
 
   if (name === "MAIN") {
-    const drawPreviewChar: DrawCharFn = (
-      sourceFont,
-      char,
-      startX,
-      startY,
-      color
-    ) => {
-      const pattern = sourceFont[char];
-
-      if (!pattern) {
-        return;
-      }
-
-      pattern.forEach((line, y) => {
-        line.split("").forEach((value, x) => {
-          const targetX = startX + x;
-          const targetY = startY + y;
-
-          if (
-            value === "1" &&
-            targetX >= 0 &&
-            targetX < width &&
-            targetY >= 0 &&
-            targetY < height
-          ) {
-            grid[targetY][targetX] = {
-              active: true,
-              color,
-            };
-          }
-        });
-      });
-    };
-
-    drawMainLayoutToGrid(
-      drawPreviewChar,
-      time,
-      temperature,
-      humidity
-    );
+    drawMainLayoutToGrid(drawPreviewChar, time, temperature, humidity);
   }
 
   if (name === "CLASSIC") {
-    drawText("19:45", 0, 0);
-    drawText("12/06", 0, 3);
+    drawClassicLayoutToGrid(drawPreviewChar);
   }
 
   if (name === "STACKED") {
@@ -542,7 +539,6 @@ function LayoutPreview({
     </div>
   );
 }
-
 export default function Home() {
   const layoutNames = layouts.map((layout) => layout.name);
   const [selectedLayout, setSelectedLayout] = useState(layoutNames[0]);
