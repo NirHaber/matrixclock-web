@@ -166,105 +166,35 @@ function MatrixPreview({
       });
     };
 
-    if (layout === "DIGIT_SWAP") {
+    const drawMainLayout = () => {
+      let timeX = 3;
+      const timeY = 1;
+
+      time.split("").forEach((char) => {
+        drawChar(LARGE_FONT, char, timeX, timeY, "time");
+        timeX += char === ":" ? 2 : 6;
+      });
+
+      let tempX = 0;
+      const envY = 10;
+      const tempText = `${temperature}°`;
+
+      tempText.split("").forEach((char) => {
+        drawChar(SMALL_FONT, char, tempX, envY, "temperature");
+        tempX += char === "." ? 2 : char === "°" ? 3 : 4;
+      });
+
+      let humidityX = 20;
+      const humidityText = `${humidity}%`;
+
+      humidityText.split("").forEach((char) => {
+        drawChar(SMALL_FONT, char, humidityX, envY, "humidity");
+        humidityX += 4;
+      });
+    };
+
+    const drawClassicLayout = () => {
       const now = new Date();
-    
-      const secondsNumber = now.getSeconds();
-    
-      const hours = now.getHours().toString().padStart(2, "0");
-      const minutes = now.getMinutes().toString().padStart(2, "0");
-    
-      const day = now.getDate().toString().padStart(2, "0");
-      const month = (now.getMonth() + 1)
-        .toString()
-        .padStart(2, "0");
-    
-      const showMainLayout =
-        secondsNumber >= 55 || secondsNumber <= 4;
-    
-      if (showMainLayout) {
-        let timeX = 3;
-        const timeY = 1;
-    
-        const timeText = `${hours}:${minutes}`;
-    
-        timeText.split("").forEach((char) => {
-          drawChar(LARGE_FONT, char, timeX, timeY, "time");
-          timeX += char === ":" ? 2 : 6;
-        });
-    
-        let tempX = 0;
-        const envY = 10;
-        const tempText = `${temperature}°`;
-    
-        tempText.split("").forEach((char) => {
-          drawChar(
-            SMALL_FONT,
-            char,
-            tempX,
-            envY,
-            "temperature"
-          );
-    
-          tempX +=
-            char === "."
-              ? 2
-              : char === "°"
-              ? 3
-              : 4;
-        });
-    
-        let humidityX = 20;
-        const humidityText = `${humidity}%`;
-    
-        humidityText.split("").forEach((char) => {
-          drawChar(
-            SMALL_FONT,
-            char,
-            humidityX,
-            envY,
-            "humidity"
-          );
-    
-          humidityX += 4;
-        });
-      } else {
-        const timeText = `${hours}:${minutes}`;
-        const dateText = `${day}/${month}`;
-    
-        const timeY = 1;
-        const dateY = 10;
-    
-        let timeX = 3;
-    
-        timeText.split("").forEach((char) => {
-          drawChar(
-            LARGE_FONT,
-            char,
-            timeX,
-            timeY,
-            "stacked"
-          );
-    
-          timeX += char === ":" ? 2 : 6;
-        });
-    
-        let dateX = 7;
-    
-        dateText.split("").forEach((char) => {
-          drawChar(
-            SMALL_FONT,
-            char,
-            dateX,
-            dateY,
-            "classicDate"
-          );
-    
-          dateX += 4;
-        });
-      }
-    }
-    else if (layout === "CLASSIC") {      const now = new Date();
 
       const hours = now.getHours().toString().padStart(2, "0");
       const minutes = now.getMinutes().toString().padStart(2, "0");
@@ -279,18 +209,34 @@ function MatrixPreview({
       const dateY = 10;
 
       let timeX = 3;
+
       timeText.split("").forEach((char) => {
         drawChar(LARGE_FONT, char, timeX, timeY, "stacked");
         timeX += char === ":" ? 2 : 6;
       });
 
       let dateX = 7;
+
       dateText.split("").forEach((char) => {
         drawChar(SMALL_FONT, char, dateX, dateY, "classicDate");
         dateX += 4;
       });
+    };
 
+    if (layout === "DIGIT_SWAP") {
+      const now = new Date();
+      const secondsNumber = now.getSeconds();
 
+      const showMainLayout = secondsNumber >= 55 || secondsNumber <= 4;
+
+      if (showMainLayout) {
+        drawMainLayout();
+      } else {
+        drawClassicLayout();
+      }
+    }
+    else if (layout === "CLASSIC") {
+      drawClassicLayout();
     }
     else if (layout === "SLIDE_DEMO") {
       const now = new Date();
@@ -350,33 +296,12 @@ function MatrixPreview({
         secondsX += 4;
       });
     } else {
-      let timeX = 3;
-      const timeY = 1;
-
-      time.split("").forEach((char) => {
-        drawChar(LARGE_FONT, char, timeX, timeY, "time");
-        timeX += char === ":" ? 2 : 6;
-      });
-
-      let tempX = 0;
-      const envY = 10;
-      const tempText = `${temperature}°`;
-
-      tempText.split("").forEach((char) => {
-        drawChar(SMALL_FONT, char, tempX, envY, "temperature");
-        tempX += char === "." ? 2 : char === "°" ? 3 : 4;
-      });
-
-      let humidityX = 20;
-      const humidityText = `${humidity}%`;
-
-      humidityText.split("").forEach((char) => {
-        drawChar(SMALL_FONT, char, humidityX, envY, "humidity");
-        humidityX += 4;
-      });
+      drawMainLayout();
     }
+
     return grid.flat();
   }, [time, colonVisible, temperature, humidity, layout]);
+
   return (
     <div className="relative overflow-hidden rounded-3xl border border-emerald-400/20 bg-black p-4 shadow-2xl shadow-emerald-500/10">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.25),transparent_55%)]" />
