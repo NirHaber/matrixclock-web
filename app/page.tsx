@@ -383,7 +383,10 @@ function MatrixPreview({
         <div className="mt-8 rounded-xl border border-emerald-400/20 bg-black/80 px-6 py-6 text-center">
           <p
             className="font-mono text-5xl font-semibold tracking-[0.25em] text-emerald-300 sm:text-6xl"
-            style={{ textShadow: "0 0 28px rgb(52 211 153 / 0.65)" }}
+            style={{
+              textShadow: "0 0 28px rgb(52 211 153 / 0.65)",
+              textIndent: "0.25em",
+            }}
             aria-live="polite"
             aria-label={`Current time ${time}`}
           >
