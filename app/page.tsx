@@ -380,18 +380,17 @@ function MatrixPreview({
           ))}
         </div>
 
-        <div className="mt-8 rounded-xl border border-emerald-400/20 bg-black/80 px-6 py-6 text-center">
-          <p
-            className="font-mono text-5xl font-semibold tracking-[0.25em] text-emerald-300 sm:text-6xl"
-            style={{
-              textShadow: "0 0 28px rgb(52 211 153 / 0.65)",
-              textIndent: "0.25em",
-            }}
-            aria-live="polite"
-            aria-label={`Current time ${time}`}
-          >
-            {time}
-          </p>
+        <div className="mt-8 rounded-xl border border-emerald-400/20 bg-black/80 px-4 py-6">
+          <div className="flex w-full justify-center overflow-hidden rounded-lg border border-emerald-400/10 bg-black/60 px-3 py-4">
+            <p
+              className="font-mono text-[clamp(3rem,15vw,4rem)] font-semibold leading-none tracking-normal text-emerald-300 sm:text-6xl"
+              style={{ textShadow: "0 0 28px rgb(52 211 153 / 0.65)" }}
+              aria-live="polite"
+              aria-label={`Current time ${time}`}
+            >
+              {time}
+            </p>
+          </div>
         </div>
       </div>
     </div>
