@@ -67,7 +67,7 @@ const pixelColors = {
 
   analogMarker:
     "bg-purple-400 shadow-[0_0_4px_rgba(216,180,254,0.10)]",
-  
+
   analogHand:
     "bg-purple-300 shadow-[0_0_12px_rgba(216,180,254,0.95)]",
 
@@ -142,7 +142,7 @@ const drawAnalogSecondsToGrid = (
   frame.forEach(([x, y]) => {
     setPixel(centerX + x, centerY + y, "analogMarker");
   });
-  
+
   setPixel(centerX, centerY, "analogHand");
   setPixel(centerX + dx, centerY + dy, "analogHand");
 };
@@ -448,11 +448,13 @@ const layouts = [
 function LayoutPreview({
   name,
   time,
+  colonVisible,
   temperature,
   humidity,
 }: {
   name: string;
   time: string;
+  colonVisible: boolean;
   temperature: string;
   humidity: string;
 }) {
@@ -473,8 +475,11 @@ function LayoutPreview({
     startY,
     color
   ) => {
-    const pattern = sourceFont[char];
+    if (char === ":" && !colonVisible) {
+      return;
+    }
 
+    const pattern = sourceFont[char];
     if (!pattern) {
       return;
     }
@@ -805,6 +810,7 @@ export default function Home() {
                   <LayoutPreview
                     name={layout.name}
                     time={time}
+                    colonVisible={colonVisible}
                     temperature={temperature}
                     humidity={humidity}
                   />
